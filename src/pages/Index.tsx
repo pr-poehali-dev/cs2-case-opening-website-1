@@ -165,6 +165,7 @@ const Index = () => {
           balance={balance} 
           steamId={user!.steamId}
           avatar={user!.avatar}
+          tradeUrl={user!.tradeUrl}
           onLogout={logout} 
         />
       </div>
