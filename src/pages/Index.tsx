@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import CaseOpeningModal from '@/components/CaseOpeningModal';
-import InventorySection from '@/components/InventorySection';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import CaseGrid from '@/components/CaseGrid';
@@ -155,6 +154,18 @@ const Index = () => {
     setActiveSection('profile');
   };
 
+  const handleUseInContract = (itemId: string) => {
+    setActiveSection('contracts');
+  };
+
+  const handleUseInUpgrade = (itemId: string) => {
+    setActiveSection('upgrade');
+  };
+
+  const handleWithdrawItem = (itemId: string) => {
+    alert(`Предмет отправлен на ваш Trade URL!`);
+  };
+
   if (!isAuthenticated) {
     return <Auth onLogin={login} />;
   }
@@ -170,7 +181,11 @@ const Index = () => {
           steamId={user!.steamId}
           avatar={user!.avatar}
           tradeUrl={user!.tradeUrl}
-          onLogout={logout} 
+          onLogout={logout}
+          onSellItem={handleSellItem}
+          onUseInContract={handleUseInContract}
+          onUseInUpgrade={handleUseInUpgrade}
+          onWithdrawItem={handleWithdrawItem}
         />
       </div>
     );
@@ -245,11 +260,6 @@ const Index = () => {
               <h2 className="text-2xl font-bold mb-6">КЕЙСЫ</h2>
               <CaseGrid cases={cases} onCaseClick={handleCaseClick} />
             </div>
-
-            <InventorySection
-              items={items}
-              onSellItem={handleSellItem}
-            />
           </div>
         </main>
       </div>

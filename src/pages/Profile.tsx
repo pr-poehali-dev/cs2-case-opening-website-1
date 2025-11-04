@@ -14,18 +14,23 @@ interface ProfileProps {
   avatar?: string;
   tradeUrl?: string;
   onLogout: () => void;
+  onSellItem: (price: number) => void;
+  onUseInContract: (itemId: string) => void;
+  onUseInUpgrade: (itemId: string) => void;
+  onWithdrawItem: (itemId: string) => void;
 }
 
-export default function Profile({ username, email, balance, steamId, avatar, tradeUrl, onLogout }: ProfileProps) {
-  const { items } = useInventory();
-  const { setTradeUrl } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'settings'>('overview');
+export default function Profile({ username, email, balance, steamId, avatar, tradeUrl, onLogout, onSellItem, onUseInContract, onUseInUpgrade, onWithdrawItem }: ProfileProps) {
+  const { items, removeItem } = useInventory();
+  const { user, setTradeUrl } = useAuth();
+  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'settings' | 'inventory'>('overview');
   const [editMode, setEditMode] = useState(false);
   const [newUsername, setNewUsername] = useState(username);
   const [newEmail, setNewEmail] = useState(email);
   const [tradeUrlInput, setTradeUrlInput] = useState('');
   const [tradeUrlError, setTradeUrlError] = useState('');
   const [showTradeUrlSuccess, setShowTradeUrlSuccess] = useState(false);
+  const [showTradeUrlReminder, setShowTradeUrlReminder] = useState(false);
 
   const totalSpent = 15420;
   const casesOpened = 187;
@@ -160,6 +165,14 @@ export default function Profile({ username, email, balance, steamId, avatar, tra
             Обзор
           </Button>
           <Button
+            variant={activeTab === 'inventory' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('inventory')}
+            className="gap-2 whitespace-nowrap"
+          >
+            <Icon name="Package" size={18} />
+            Инвентарь
+          </Button>
+          <Button
             variant={activeTab === 'stats' ? 'default' : 'outline'}
             onClick={() => setActiveTab('stats')}
             className="gap-2 whitespace-nowrap"
@@ -236,6 +249,151 @@ export default function Profile({ username, email, balance, steamId, avatar, tra
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'inventory' && (
+          <div className="space-y-6">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-1">Мой инвентарь</h2>
+                  <p className="text-sm text-gray-400">
+                    Всего предметов: {items.length} • Общая стоимость: {items.reduce((sum, item) => sum + item.price, 0)} ₽
+                  </p>
+                </div>
+              </div>
+
+              {items.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📦</div>
+                  <h3 className="text-xl font-bold mb-2">Инвентарь пуст</h3>
+                  <p className="text-gray-400">Откройте кейсы, чтобы получить предметы</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {items.map((item) => {
+                    const rarityColors = {
+                      common: 'from-gray-600 to-gray-800 border-gray-500',
+                      rare: 'from-blue-600 to-blue-800 border-blue-500',
+                      epic: 'from-purple-600 to-purple-800 border-purple-500',
+                      legendary: 'from-orange-600 to-orange-800 border-orange-500',
+                    };
+                    
+                    const rarityNames = {
+                      common: 'Обычная',
+                      rare: 'Редкая',
+                      epic: 'Эпическая',
+                      legendary: 'Легендарная',
+                    };
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`bg-gradient-to-br ${rarityColors[item.rarity]} border-2 rounded-lg p-4 relative hover:scale-105 transition-transform`}
+                      >
+                        <Badge className="absolute top-2 right-2 bg-black/80 text-white border-0 text-xs">
+                          {item.caseName}
+                        </Badge>
+
+                        <div className="aspect-square mb-4 flex items-center justify-center">
+                          <div className="text-6xl">{item.icon}</div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h3 className="font-bold text-sm">{item.name}</h3>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-300">{rarityNames[item.rarity]}</span>
+                            <span className="font-bold text-green-400">{item.price} ₽</span>
+                          </div>
+
+                          <div className="flex gap-1 pt-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="flex-1 h-8 px-2 hover:bg-blue-500/20 hover:border-blue-500 border border-transparent"
+                              title="Использовать в контракте"
+                              onClick={() => onUseInContract(item.id)}
+                            >
+                              <Icon name="Layers" size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="flex-1 h-8 px-2 hover:bg-purple-500/20 hover:border-purple-500 border border-transparent"
+                              title="Использовать в апгрейде"
+                              onClick={() => onUseInUpgrade(item.id)}
+                            >
+                              <Icon name="TrendingUp" size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="flex-1 h-8 px-2 hover:bg-green-500/20 hover:border-green-500 border border-transparent"
+                              title="Продать"
+                              onClick={() => {
+                                onSellItem(item.price);
+                                removeItem(item.id);
+                              }}
+                            >
+                              <Icon name="DollarSign" size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="flex-1 h-8 px-2 hover:bg-orange-500/20 hover:border-orange-500 border border-transparent"
+                              title="Вывести в Steam"
+                              onClick={() => {
+                                if (!user?.tradeUrl) {
+                                  setShowTradeUrlReminder(true);
+                                } else {
+                                  onWithdrawItem(item.id);
+                                  removeItem(item.id);
+                                }
+                              }}
+                            >
+                              <Icon name="Send" size={16} />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {showTradeUrlReminder && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowTradeUrlReminder(false)}>
+                <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <Icon name="AlertCircle" size={28} className="text-orange-400" />
+                    <h3 className="text-xl font-bold">Trade URL не привязан</h3>
+                  </div>
+                  <p className="text-gray-300 mb-4">
+                    Для вывода предметов необходимо привязать Steam Trade URL в настройках профиля.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => {
+                        setShowTradeUrlReminder(false);
+                        setActiveTab('settings');
+                      }}
+                      className="flex-1 bg-green-500 hover:bg-green-600"
+                    >
+                      <Icon name="Settings" size={18} className="mr-2" />
+                      Перейти в настройки
+                    </Button>
+                    <Button
+                      onClick={() => setShowTradeUrlReminder(false)}
+                      variant="outline"
+                    >
+                      Позже
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
