@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
+import CaseOpeningModal from '@/components/CaseOpeningModal';
 
 const weapons = [
   { name: 'AK-47', subtitle: 'Фиолетовый', icon: '🔫' },
@@ -113,12 +114,21 @@ const Index = () => {
   const [promoCode, setPromoCode] = useState('');
   const [activeSection, setActiveSection] = useState('cases');
   const [sidebarOpen] = useState(true);
+  const [selectedCase, setSelectedCase] = useState<{name: string; price: number} | null>(null);
 
   const applyPromo = () => {
     if (promoCode === 'SIGN-15') {
       setBalance(balance + Math.floor(balance * 0.15));
       setPromoCode('');
     }
+  };
+
+  const handleCaseClick = (caseItem: typeof cases[0]) => {
+    setSelectedCase({ name: caseItem.name, price: caseItem.price });
+  };
+
+  const handleBalanceChange = (amount: number) => {
+    setBalance(balance + amount);
   };
 
   return (
@@ -263,6 +273,7 @@ const Index = () => {
               {cases.map((caseItem) => (
                 <div
                   key={caseItem.id}
+                  onClick={() => handleCaseClick(caseItem)}
                   className={`bg-gradient-to-br ${caseItem.gradient} border-2 ${caseItem.borderColor} rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer relative overflow-hidden group`}
                 >
                   {caseItem.isNew && (
@@ -297,6 +308,16 @@ const Index = () => {
           </main>
         </div>
       </div>
+
+      {selectedCase && (
+        <CaseOpeningModal
+          isOpen={!!selectedCase}
+          onClose={() => setSelectedCase(null)}
+          caseName={selectedCase.name}
+          casePrice={selectedCase.price}
+          onBalanceChange={handleBalanceChange}
+        />
+      )}
     </div>
   );
 };
