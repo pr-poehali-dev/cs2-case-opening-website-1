@@ -7,6 +7,7 @@ import CaseOpeningModal from '@/components/CaseOpeningModal';
 import InventorySection from '@/components/InventorySection';
 import Contracts from '@/pages/Contracts';
 import Upgrade from '@/pages/Upgrade';
+import DailyBonus from '@/pages/DailyBonus';
 import { soundManager } from '@/utils/sounds';
 import { useInventory } from '@/contexts/InventoryContext';
 
@@ -141,6 +142,38 @@ const Index = () => {
     setBalance(balance + price);
   };
 
+  if (activeSection === 'daily-bonus') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="border-b border-border bg-card/50 backdrop-blur">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold text-neon-orange">CASE🔥BATTLE</div>
+                  <div className="text-xs text-muted-foreground">У НАС ВЫИГРЫВАЮТ</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 bg-neon-green/10 border border-neon-green px-4 py-2 rounded-lg">
+                  <Icon name="Coins" size={20} className="text-neon-green" />
+                  <span className="font-bold text-lg">{balance}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveSection('cases')}
+                >
+                  <Icon name="Home" size={20} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <DailyBonus balance={balance} onBalanceChange={handleBalanceChange} />
+      </div>
+    );
+  }
+
   if (activeSection === 'upgrade') {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -266,12 +299,12 @@ const Index = () => {
                   КОНТРАКТЫ
                 </Button>
                 <Button
-                  variant={activeSection === 'giveaways' ? 'default' : 'ghost'}
-                  onClick={() => setActiveSection('giveaways')}
+                  variant={activeSection === 'daily-bonus' ? 'default' : 'ghost'}
+                  onClick={() => setActiveSection('daily-bonus')}
                   className="gap-2"
                 >
                   <Icon name="Gift" size={16} />
-                  РОЗЫГРЫШИ
+                  БОНУС
                 </Button>
                 <Button
                   variant={activeSection === 'tournaments' ? 'default' : 'ghost'}
