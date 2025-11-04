@@ -4,12 +4,14 @@ interface User {
   username: string;
   email: string;
   isAdmin: boolean;
+  steamId?: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (username: string, email: string) => void;
+  login: (username: string, email: string, steamId?: string, avatar?: string) => void;
   logout: () => void;
 }
 
@@ -25,11 +27,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (username: string, email: string) => {
+  const login = (username: string, email: string, steamId?: string, avatar?: string) => {
     const newUser: User = {
       username,
       email,
       isAdmin: email.includes('admin'),
+      steamId,
+      avatar,
     };
     setUser(newUser);
     localStorage.setItem('cs2_user', JSON.stringify(newUser));

@@ -159,7 +159,14 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <SectionHeader balance={balance} onBackClick={() => setActiveSection('cases')} />
-        <Profile username={user!.username} email={user!.email} balance={balance} onLogout={logout} />
+        <Profile 
+          username={user!.username} 
+          email={user!.email} 
+          balance={balance} 
+          steamId={user!.steamId}
+          avatar={user!.avatar}
+          onLogout={logout} 
+        />
       </div>
     );
   }
