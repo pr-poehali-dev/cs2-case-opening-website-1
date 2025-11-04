@@ -1,8 +1,19 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { useInventory } from '@/contexts/InventoryContext';
 import { soundManager } from '@/utils/sounds';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const rarityColors = {
   common: 'from-gray-600 to-gray-800 border-gray-500',
@@ -18,8 +29,15 @@ const rarityNames = {
   legendary: 'Легендарная',
 };
 
-export default function InventorySection() {
+interface InventorySectionProps {
+  onSellItem: (price: number) => void;
+  balance: number;
+}
+
+export default function InventorySection({ onSellItem, balance }: InventorySectionProps) {
   const { items, removeItem, clearInventory } = useInventory();
+  const [sellDialogOpen, setSellDialogOpen] = useState(false);
+  const [itemToSell, setItemToSell] = useState<{ id: string; name: string; price: number } | null>(null);
 
   const totalValue = items.reduce((sum, item) => sum + item.price, 0);
 
@@ -92,10 +110,11 @@ export default function InventorySection() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 gap-1"
+                      className="flex-1 gap-1 bg-neon-green/10 border-neon-green hover:bg-neon-green/20"
                       onClick={() => {
                         soundManager.playClick();
-                        alert('Функция продажи скоро будет доступна!');
+                        setItemToSell({ id: item.id, name: item.name, price: item.price });
+                        setSellDialogOpen(true);
                       }}
                     >
                       <Icon name="DollarSign" size={14} />
@@ -104,11 +123,10 @@ export default function InventorySection() {
                     <Button
                       size="sm"
                       variant="outline"
+                      className="border-destructive/50 hover:bg-destructive/10"
                       onClick={() => {
                         soundManager.playClick();
-                        if (confirm('Удалить предмет из инвентаря?')) {
-                          removeItem(item.id);
-                        }
+                        removeItem(item.id);
                       }}
                     >
                       <Icon name="Trash2" size={14} />
@@ -119,6 +137,57 @@ export default function InventorySection() {
             ))}
           </div>
         )}
+
+        <AlertDialog open={sellDialogOpen} onOpenChange={setSellDialogOpen}>
+          <AlertDialogContent className="bg-card border-border">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-2xl">Продать предмет?</AlertDialogTitle>
+              <AlertDialogDescription className="text-base">
+                {itemToSell && (
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-neon-green/10 border border-neon-green rounded-lg p-4">
+                      <div className="text-foreground font-bold text-lg mb-2">
+                        {itemToSell.name}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Вы получите:</span>
+                        <span className="text-neon-green font-bold text-xl">
+                          +{itemToSell.price} ₽
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Ваш баланс после продажи: {balance + itemToSell.price} ₽
+                    </div>
+                  </div>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => soundManager.playClick()}
+                className="font-bold"
+              >
+                Отмена
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (itemToSell) {
+                    soundManager.playWin('rare');
+                    onSellItem(itemToSell.price);
+                    removeItem(itemToSell.id);
+                    setSellDialogOpen(false);
+                    setItemToSell(null);
+                  }
+                }}
+                className="bg-neon-green hover:bg-neon-green/80 font-bold"
+              >
+                <Icon name="DollarSign" size={18} className="mr-2" />
+                Продать
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

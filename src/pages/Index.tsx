@@ -135,6 +135,10 @@ const Index = () => {
     setBalance(balance + amount);
   };
 
+  const handleSellItem = (price: number) => {
+    setBalance(balance + price);
+  };
+
   if (activeSection === 'profile') {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -162,7 +166,7 @@ const Index = () => {
             </div>
           </div>
         </header>
-        <InventorySection />
+        <InventorySection onSellItem={handleSellItem} balance={balance} />
       </div>
     );
   }
