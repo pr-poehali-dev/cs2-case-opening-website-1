@@ -13,8 +13,11 @@ import Upgrade from '@/pages/Upgrade';
 import DailyBonus from '@/pages/DailyBonus';
 import Promocodes from '@/pages/Promocodes';
 import AdminPanel from '@/pages/AdminPanel';
+import Auth from '@/pages/Auth';
+import Profile from '@/pages/Profile';
 import { soundManager } from '@/utils/sounds';
 import { useInventory } from '@/contexts/InventoryContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const weapons = [
   { name: 'AK-47', subtitle: 'Фиолетовый', icon: '🔫' },
@@ -122,10 +125,10 @@ const cases = [
 
 const Index = () => {
   const { items } = useInventory();
+  const { user, isAuthenticated, login, logout } = useAuth();
   const [balance, setBalance] = useState(1723);
   const [promoCode, setPromoCode] = useState('');
   const [activeSection, setActiveSection] = useState('cases');
-  const [isAdmin] = useState(true);
   const [sidebarOpen] = useState(true);
   const [selectedCase, setSelectedCase] = useState<{name: string; price: number} | null>(null);
 
@@ -147,6 +150,19 @@ const Index = () => {
   const handleSellItem = (price: number) => {
     setBalance(balance + price);
   };
+
+  if (!isAuthenticated) {
+    return <Auth onLogin={login} />;
+  }
+
+  if (activeSection === 'profile') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <SectionHeader balance={balance} onBackClick={() => setActiveSection('cases')} />
+        <Profile username={user!.username} email={user!.email} balance={balance} onLogout={logout} />
+      </div>
+    );
+  }
 
   if (activeSection === 'admin') {
     return <AdminPanel />;
@@ -194,7 +210,8 @@ const Index = () => {
         balance={balance}
         promoCode={promoCode}
         activeSection={activeSection}
-        isAdmin={isAdmin}
+        isAdmin={user?.isAdmin || false}
+        username={user?.username}
         onPromoCodeChange={setPromoCode}
         onApplyPromo={applyPromo}
         onSectionChange={setActiveSection}
@@ -204,7 +221,7 @@ const Index = () => {
         <Sidebar
           activeSection={activeSection}
           sidebarOpen={sidebarOpen}
-          isAdmin={isAdmin}
+          isAdmin={user?.isAdmin || false}
           onSectionChange={setActiveSection}
         />
 

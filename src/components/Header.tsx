@@ -7,6 +7,7 @@ interface HeaderProps {
   promoCode: string;
   activeSection: string;
   isAdmin?: boolean;
+  username?: string;
   onPromoCodeChange: (code: string) => void;
   onApplyPromo: () => void;
   onSectionChange: (section: string) => void;
@@ -17,6 +18,7 @@ export default function Header({
   promoCode,
   activeSection,
   isAdmin = false,
+  username,
   onPromoCodeChange,
   onApplyPromo,
   onSectionChange,
@@ -99,8 +101,14 @@ export default function Header({
               <Icon name="Coins" size={20} className="text-neon-green" />
               <span className="font-bold text-lg">{balance}</span>
             </div>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onSectionChange('profile')}
+              className="gap-2"
+            >
               <Icon name="User" size={20} />
+              {username && <span className="hidden lg:inline">{username}</span>}
             </Button>
           </div>
         </div>
