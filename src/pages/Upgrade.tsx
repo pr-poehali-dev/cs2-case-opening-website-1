@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useInventory } from '@/contexts/InventoryContext';
+import { useUpgradeHistory } from '@/contexts/UpgradeHistoryContext';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Slider } from '@/components/ui/slider';
@@ -10,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import UpgradeHistory from '@/components/UpgradeHistory';
 import confetti from 'canvas-confetti';
 
 const rarityOrder = ['common', 'rare', 'epic', 'legendary'] as const;
@@ -43,6 +45,7 @@ interface UpgradeProps {
 
 export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
   const { items, removeItem, addItem } = useInventory();
+  const { addHistoryItem } = useUpgradeHistory();
   const [selectedInputItems, setSelectedInputItems] = useState<string[]>([]);
   const [selectedTargetItem, setSelectedTargetItem] = useState<string | null>(null);
   const [betAmount, setBetAmount] = useState(0);
@@ -80,11 +83,19 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
 
   const winChance = calculateWinChance();
 
+  const inputValue = selectedInputItems.reduce((sum, id) => {
+    const item = items.find((i) => i.id === id);
+    return sum + (item?.price || 0);
+  }, 0) + betAmount;
+
   const executeUpgrade = () => {
     if (selectedInputItems.length === 0 || !selectedTargetItem || betAmount > balance) return;
 
     setIsUpgrading(true);
     setUpgradeResult(null);
+
+    const currentInputValue = inputValue;
+    const currentWinChance = winChance;
 
     const spinDuration = 3000;
     const spins = 5;
@@ -92,56 +103,80 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
     setTargetRotation(finalRotation);
 
     setTimeout(() => {
-      const won = Math.random() * 100 < winChance;
+      const won = Math.random() * 100 < currentWinChance;
       setUpgradeResult(won ? 'win' : 'lose');
+
+      const targetItem = items.find((i) => i.id === selectedTargetItem);
+      const inputItemsData = selectedInputItems.map((id) => {
+        const item = items.find((i) => i.id === id);
+        return {
+          name: item?.name || '',
+          rarity: item?.rarity || 'common',
+          price: item?.price || 0,
+          icon: item?.icon || '🔫',
+        };
+      });
+
+      if (targetItem) {
+        addHistoryItem({
+          inputItems: inputItemsData,
+          targetItem: {
+            name: targetItem.name,
+            rarity: targetItem.rarity,
+            price: targetItem.price,
+            icon: targetItem.icon,
+          },
+          betAmount,
+          totalValue: currentInputValue,
+          chance: currentWinChance,
+          result: won ? 'win' : 'lose',
+        });
+      }
 
       selectedInputItems.forEach((id) => removeItem(id));
       onBalanceChange(-betAmount);
 
-      if (won) {
-        const targetItem = items.find((i) => i.id === selectedTargetItem);
-        if (targetItem) {
-          addItem({
-            name: targetItem.name,
-            rarity: targetItem.rarity,
-            icon: targetItem.icon,
-            caseName: 'Upgrade',
-            price: targetItem.price,
-          });
+      if (won && targetItem) {
+        addItem({
+          name: targetItem.name,
+          rarity: targetItem.rarity,
+          icon: targetItem.icon,
+          caseName: 'Upgrade',
+          price: targetItem.price,
+        });
 
-          if (targetItem.rarity === 'legendary') {
-            const duration = 3000;
-            const end = Date.now() + duration;
+        if (targetItem.rarity === 'legendary') {
+          const duration = 3000;
+          const end = Date.now() + duration;
 
-            const frame = () => {
-              confetti({
-                particleCount: 3,
-                angle: 60,
-                spread: 55,
-                origin: { x: 0 },
-                colors: ['#f97316', '#fb923c', '#fdba74'],
-              });
-              confetti({
-                particleCount: 3,
-                angle: 120,
-                spread: 55,
-                origin: { x: 1 },
-                colors: ['#f97316', '#fb923c', '#fdba74'],
-              });
-
-              if (Date.now() < end) {
-                requestAnimationFrame(frame);
-              }
-            };
-            frame();
-          } else if (targetItem.rarity === 'epic') {
+          const frame = () => {
             confetti({
-              particleCount: 100,
-              spread: 70,
-              origin: { y: 0.6 },
-              colors: ['#a855f7', '#c084fc', '#e9d5ff'],
+              particleCount: 3,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: ['#f97316', '#fb923c', '#fdba74'],
             });
-          }
+            confetti({
+              particleCount: 3,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: ['#f97316', '#fb923c', '#fdba74'],
+            });
+
+            if (Date.now() < end) {
+              requestAnimationFrame(frame);
+            }
+          };
+          frame();
+        } else if (targetItem.rarity === 'epic') {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#a855f7', '#c084fc', '#e9d5ff'],
+          });
         }
       }
 
@@ -155,11 +190,6 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
     }, spinDuration);
   };
 
-  const inputValue = selectedInputItems.reduce((sum, id) => {
-    const item = items.find((i) => i.id === id);
-    return sum + (item?.price || 0);
-  }, 0) + betAmount;
-
   const sortedItems = [...items].sort((a, b) => {
     if (sortBy === 'price') return b.price - a.price;
     return rarityOrder.indexOf(b.rarity as Rarity) - rarityOrder.indexOf(a.rarity as Rarity);
@@ -169,6 +199,10 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold text-center mb-8">МОДЕРНИЗАЦИЯ ОРУЖИЯ 2.0</h1>
+
+        <div className="mb-6">
+          <UpgradeHistory />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700">
