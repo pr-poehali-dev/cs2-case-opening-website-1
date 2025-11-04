@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import CaseOpeningModal from '@/components/CaseOpeningModal';
+import { soundManager } from '@/utils/sounds';
 
 const weapons = [
   { name: 'AK-47', subtitle: 'Фиолетовый', icon: '🔫' },
@@ -244,6 +245,8 @@ const Index = () => {
               {weapons.map((weapon, index) => (
                 <button
                   key={index}
+                  onMouseEnter={() => soundManager.playHover()}
+                  onClick={() => soundManager.playClick()}
                   className="w-full text-left p-3 rounded hover:bg-sidebar-accent transition-colors group"
                 >
                   <div className="flex items-center gap-2">
@@ -273,7 +276,11 @@ const Index = () => {
               {cases.map((caseItem) => (
                 <div
                   key={caseItem.id}
-                  onClick={() => handleCaseClick(caseItem)}
+                  onClick={() => {
+                    soundManager.playClick();
+                    handleCaseClick(caseItem);
+                  }}
+                  onMouseEnter={() => soundManager.playHover()}
                   className={`bg-gradient-to-br ${caseItem.gradient} border-2 ${caseItem.borderColor} rounded-lg p-4 hover:scale-105 transition-transform cursor-pointer relative overflow-hidden group`}
                 >
                   {caseItem.isNew && (

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { soundManager } from '@/utils/sounds';
 
 interface Item {
   id: number;
@@ -81,6 +82,9 @@ export default function CaseOpeningModal({
     setIsSpinning(true);
     onBalanceChange(-casePrice);
 
+    soundManager.playSpinStart();
+    setTimeout(() => soundManager.playSpinning(), 200);
+
     const winIndex = Math.floor(Math.random() * 10) + 20;
     const finalPosition = -(winIndex * 140 - window.innerWidth / 2 + 70);
     
@@ -88,7 +92,9 @@ export default function CaseOpeningModal({
 
     setTimeout(() => {
       setIsSpinning(false);
-      setWonItem(items[winIndex]);
+      const wonItem = items[winIndex];
+      setWonItem(wonItem);
+      soundManager.playWin(wonItem.rarity);
     }, 5000);
   };
 
@@ -134,6 +140,7 @@ export default function CaseOpeningModal({
             <div className="text-center">
               <Button
                 onClick={startSpin}
+                onMouseEnter={() => soundManager.playHover()}
                 className="bg-neon-green hover:bg-neon-green/80 text-white font-bold text-lg px-12 py-6"
               >
                 Открыть за {casePrice} ₽
@@ -153,14 +160,22 @@ export default function CaseOpeningModal({
 
               <div className="flex gap-4 justify-center">
                 <Button
-                  onClick={startSpin}
+                  onClick={() => {
+                    soundManager.playClick();
+                    startSpin();
+                  }}
+                  onMouseEnter={() => soundManager.playHover()}
                   className="bg-neon-green hover:bg-neon-green/80 text-white font-bold px-8"
                 >
                   <Icon name="RotateCw" size={18} className="mr-2" />
                   Открыть ещё
                 </Button>
                 <Button
-                  onClick={handleClose}
+                  onClick={() => {
+                    soundManager.playClick();
+                    handleClose();
+                  }}
+                  onMouseEnter={() => soundManager.playHover()}
                   variant="outline"
                   className="font-bold px-8"
                 >
