@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { soundManager } from '@/utils/sounds';
 import { useInventory } from '@/contexts/InventoryContext';
+import confetti from 'canvas-confetti';
 
 interface Item {
   id: number;
@@ -104,6 +105,40 @@ export default function CaseOpeningModal({
       const wonItem = items[winIndex];
       setWonItem(wonItem);
       soundManager.playWin(wonItem.rarity);
+      
+      if (wonItem.rarity === 'legendary') {
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        const frame = () => {
+          confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#f97316', '#fb923c', '#fdba74'],
+          });
+          confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#f97316', '#fb923c', '#fdba74'],
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        };
+        frame();
+      } else if (wonItem.rarity === 'epic') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#a855f7', '#c084fc', '#e9d5ff'],
+        });
+      }
       
       addItem({
         name: wonItem.name,
