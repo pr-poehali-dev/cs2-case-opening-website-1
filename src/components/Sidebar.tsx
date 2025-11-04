@@ -5,10 +5,11 @@ import { useInventory } from '@/contexts/InventoryContext';
 interface SidebarProps {
   activeSection: string;
   sidebarOpen: boolean;
+  isAdmin?: boolean;
   onSectionChange: (section: string) => void;
 }
 
-export default function Sidebar({ activeSection, sidebarOpen, onSectionChange }: SidebarProps) {
+export default function Sidebar({ activeSection, sidebarOpen, isAdmin = false, onSectionChange }: SidebarProps) {
   const { items } = useInventory();
 
   if (!sidebarOpen) return null;
@@ -59,6 +60,16 @@ export default function Sidebar({ activeSection, sidebarOpen, onSectionChange }:
               <Icon name="Ticket" size={18} />
               Промокоды
             </Button>
+            {isAdmin && (
+              <Button
+                variant={activeSection === 'admin' ? 'default' : 'ghost'}
+                className="w-full justify-start gap-2 bg-red-500/20 border-red-500 hover:bg-red-500"
+                onClick={() => onSectionChange('admin')}
+              >
+                <Icon name="Shield" size={18} />
+                Админ-панель
+              </Button>
+            )}
           </div>
         </div>
 

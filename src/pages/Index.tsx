@@ -12,6 +12,7 @@ import Contracts from '@/pages/Contracts';
 import Upgrade from '@/pages/Upgrade';
 import DailyBonus from '@/pages/DailyBonus';
 import Promocodes from '@/pages/Promocodes';
+import AdminPanel from '@/pages/AdminPanel';
 import { soundManager } from '@/utils/sounds';
 import { useInventory } from '@/contexts/InventoryContext';
 
@@ -124,6 +125,7 @@ const Index = () => {
   const [balance, setBalance] = useState(1723);
   const [promoCode, setPromoCode] = useState('');
   const [activeSection, setActiveSection] = useState('cases');
+  const [isAdmin] = useState(true);
   const [sidebarOpen] = useState(true);
   const [selectedCase, setSelectedCase] = useState<{name: string; price: number} | null>(null);
 
@@ -145,6 +147,10 @@ const Index = () => {
   const handleSellItem = (price: number) => {
     setBalance(balance + price);
   };
+
+  if (activeSection === 'admin') {
+    return <AdminPanel />;
+  }
 
   if (activeSection === 'promocodes') {
     return (
@@ -188,6 +194,7 @@ const Index = () => {
         balance={balance}
         promoCode={promoCode}
         activeSection={activeSection}
+        isAdmin={isAdmin}
         onPromoCodeChange={setPromoCode}
         onApplyPromo={applyPromo}
         onSectionChange={setActiveSection}
@@ -197,6 +204,7 @@ const Index = () => {
         <Sidebar
           activeSection={activeSection}
           sidebarOpen={sidebarOpen}
+          isAdmin={isAdmin}
           onSectionChange={setActiveSection}
         />
 

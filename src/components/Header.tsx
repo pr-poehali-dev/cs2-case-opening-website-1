@@ -6,6 +6,7 @@ interface HeaderProps {
   balance: number;
   promoCode: string;
   activeSection: string;
+  isAdmin?: boolean;
   onPromoCodeChange: (code: string) => void;
   onApplyPromo: () => void;
   onSectionChange: (section: string) => void;
@@ -15,6 +16,7 @@ export default function Header({
   balance,
   promoCode,
   activeSection,
+  isAdmin = false,
   onPromoCodeChange,
   onApplyPromo,
   onSectionChange,
@@ -69,6 +71,16 @@ export default function Header({
                 <Icon name="Ticket" size={16} />
                 ПРОМОКОДЫ
               </Button>
+              {isAdmin && (
+                <Button
+                  variant={activeSection === 'admin' ? 'default' : 'ghost'}
+                  onClick={() => onSectionChange('admin')}
+                  className="gap-2 bg-red-500/20 border-red-500 hover:bg-red-500"
+                >
+                  <Icon name="Shield" size={16} />
+                  АДМИН
+                </Button>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-4">
