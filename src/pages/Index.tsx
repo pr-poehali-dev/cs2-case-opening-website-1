@@ -151,6 +151,10 @@ const Index = () => {
     setBalance(balance + price);
   };
 
+  const handleGoToProfile = () => {
+    setActiveSection('profile');
+  };
+
   if (!isAuthenticated) {
     return <Auth onLogin={login} />;
   }
@@ -258,6 +262,7 @@ const Index = () => {
           casePrice={selectedCase.price}
           balance={balance}
           onBalanceChange={handleBalanceChange}
+          onGoToProfile={handleGoToProfile}
         />
       )}
     </div>

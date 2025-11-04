@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { soundManager } from '@/utils/sounds';
 import { useInventory } from '@/contexts/InventoryContext';
+import { useAuth } from '@/contexts/AuthContext';
 import confetti from 'canvas-confetti';
+import TradeUrlReminderModal from './TradeUrlReminderModal';
 
 interface Item {
   id: number;
@@ -19,6 +21,7 @@ interface CaseOpeningModalProps {
   caseName: string;
   casePrice: number;
   onBalanceChange: (amount: number) => void;
+  onGoToProfile: () => void;
 }
 
 const rarityColors = {
@@ -73,18 +76,23 @@ export default function CaseOpeningModal({
   caseName,
   casePrice,
   onBalanceChange,
+  onGoToProfile,
 }: CaseOpeningModalProps) {
   const { addItem } = useInventory();
+  const { user } = useAuth();
   const [isSpinning, setIsSpinning] = useState(false);
   const [items] = useState<Item[]>(generateItems());
   const [wonItem, setWonItem] = useState<Item | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [showTradeUrlReminder, setShowTradeUrlReminder] = useState(false);
+  const [isWithdrawn, setIsWithdrawn] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsSpinning(false);
       setWonItem(null);
       setScrollPosition(0);
+      setIsWithdrawn(false);
     }
   }, [isOpen]);
 
@@ -210,34 +218,88 @@ export default function CaseOpeningModal({
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
-                <Button
-                  onClick={() => {
-                    soundManager.playClick();
-                    startSpin();
-                  }}
-                  onMouseEnter={() => soundManager.playHover()}
-                  className="bg-neon-green hover:bg-neon-green/80 text-white font-bold px-8"
-                >
-                  <Icon name="RotateCw" size={18} className="mr-2" />
-                  Открыть ещё
-                </Button>
-                <Button
-                  onClick={() => {
-                    soundManager.playClick();
-                    handleClose();
-                  }}
-                  onMouseEnter={() => soundManager.playHover()}
-                  variant="outline"
-                  className="font-bold px-8"
-                >
-                  Закрыть
-                </Button>
+              <div className="space-y-4">
+                {!isWithdrawn && (
+                  <div className="bg-blue-900/20 border border-blue-500 rounded-lg p-4 text-center">
+                    <p className="text-sm text-gray-300 mb-3">
+                      Хотите вывести предмет в свой Steam инвентарь?
+                    </p>
+                    <Button
+                      onClick={() => {
+                        soundManager.playClick();
+                        if (!user?.tradeUrl) {
+                          setShowTradeUrlReminder(true);
+                        } else {
+                          setIsWithdrawn(true);
+                          soundManager.playWin('legendary');
+                          confetti({
+                            particleCount: 50,
+                            spread: 60,
+                            origin: { y: 0.6 },
+                            colors: ['#22c55e', '#4ade80', '#86efac'],
+                          });
+                        }
+                      }}
+                      onMouseEnter={() => soundManager.playHover()}
+                      className="bg-green-500 hover:bg-green-600 text-white font-bold"
+                    >
+                      <Icon name="Send" size={18} className="mr-2" />
+                      Вывести предмет
+                    </Button>
+                  </div>
+                )}
+
+                {isWithdrawn && (
+                  <div className="bg-green-900/20 border border-green-500 rounded-lg p-4 text-center animate-fade-in">
+                    <div className="flex items-center justify-center gap-2 text-green-400 mb-2">
+                      <Icon name="CheckCircle" size={24} />
+                      <p className="font-bold">Предмет отправлен!</p>
+                    </div>
+                    <p className="text-sm text-gray-300">
+                      Проверьте обмены в Steam. Предмет будет отправлен на ваш Trade URL.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-4 justify-center">
+                  <Button
+                    onClick={() => {
+                      soundManager.playClick();
+                      startSpin();
+                    }}
+                    onMouseEnter={() => soundManager.playHover()}
+                    className="bg-neon-green hover:bg-neon-green/80 text-white font-bold px-8"
+                  >
+                    <Icon name="RotateCw" size={18} className="mr-2" />
+                    Открыть ещё
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      soundManager.playClick();
+                      handleClose();
+                    }}
+                    onMouseEnter={() => soundManager.playHover()}
+                    variant="outline"
+                    className="font-bold px-8"
+                  >
+                    Закрыть
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
       </DialogContent>
+      
+      <TradeUrlReminderModal
+        isOpen={showTradeUrlReminder}
+        onClose={() => setShowTradeUrlReminder(false)}
+        onGoToProfile={() => {
+          setShowTradeUrlReminder(false);
+          onClose();
+          onGoToProfile();
+        }}
+      />
     </Dialog>
   );
 }
