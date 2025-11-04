@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import CaseOpeningModal from '@/components/CaseOpeningModal';
+import InventorySection from '@/components/InventorySection';
 import { soundManager } from '@/utils/sounds';
+import { useInventory } from '@/contexts/InventoryContext';
 
 const weapons = [
   { name: 'AK-47', subtitle: 'Фиолетовый', icon: '🔫' },
@@ -111,6 +113,7 @@ const cases = [
 ];
 
 const Index = () => {
+  const { items } = useInventory();
   const [balance, setBalance] = useState(1723);
   const [promoCode, setPromoCode] = useState('');
   const [activeSection, setActiveSection] = useState('cases');
@@ -131,6 +134,38 @@ const Index = () => {
   const handleBalanceChange = (amount: number) => {
     setBalance(balance + amount);
   };
+
+  if (activeSection === 'profile') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="border-b border-border bg-card/50 backdrop-blur">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold text-neon-orange">CASE🔥BATTLE</div>
+                  <div className="text-xs text-muted-foreground">У НАС ВЫИГРЫВАЮТ</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 bg-neon-green/10 border border-neon-green px-4 py-2 rounded-lg">
+                  <Icon name="Coins" size={20} className="text-neon-green" />
+                  <span className="font-bold text-lg">{balance}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveSection('cases')}
+                >
+                  <Icon name="Home" size={20} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <InventorySection />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -187,10 +222,19 @@ const Index = () => {
 
               <Button
                 variant="ghost"
-                size="icon"
-                onClick={() => setActiveSection('profile')}
+                className="gap-2 relative"
+                onClick={() => {
+                  soundManager.playClick();
+                  setActiveSection('profile');
+                }}
               >
-                <Icon name="User" size={20} />
+                <Icon name="Package" size={20} />
+                {items.length > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-neon-orange text-white border-0 text-xs px-1.5">
+                    {items.length}
+                  </Badge>
+                )}
+                <span className="hidden md:inline">Инвентарь</span>
               </Button>
 
               <div className="flex gap-2">

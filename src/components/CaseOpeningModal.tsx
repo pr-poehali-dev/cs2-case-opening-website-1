@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { soundManager } from '@/utils/sounds';
+import { useInventory } from '@/contexts/InventoryContext';
 
 interface Item {
   id: number;
@@ -24,6 +25,13 @@ const rarityColors = {
   rare: 'from-blue-600 to-blue-800 border-blue-500',
   epic: 'from-purple-600 to-purple-800 border-purple-500',
   legendary: 'from-orange-600 to-orange-800 border-orange-500',
+};
+
+const rarityPrices = {
+  common: 50,
+  rare: 150,
+  epic: 400,
+  legendary: 1200,
 };
 
 const generateItems = (): Item[] => {
@@ -65,6 +73,7 @@ export default function CaseOpeningModal({
   casePrice,
   onBalanceChange,
 }: CaseOpeningModalProps) {
+  const { addItem } = useInventory();
   const [isSpinning, setIsSpinning] = useState(false);
   const [items] = useState<Item[]>(generateItems());
   const [wonItem, setWonItem] = useState<Item | null>(null);
@@ -95,6 +104,14 @@ export default function CaseOpeningModal({
       const wonItem = items[winIndex];
       setWonItem(wonItem);
       soundManager.playWin(wonItem.rarity);
+      
+      addItem({
+        name: wonItem.name,
+        rarity: wonItem.rarity,
+        icon: wonItem.icon,
+        caseName: caseName,
+        price: rarityPrices[wonItem.rarity],
+      });
     }, 5000);
   };
 
