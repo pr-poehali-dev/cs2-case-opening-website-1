@@ -29,7 +29,7 @@ export default function Header({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold text-neon-orange">CASE🔥BATTLE</div>
+              <div className="text-2xl font-bold text-neon-orange">TEST DROP</div>
               <div className="text-xs text-muted-foreground">У НАС ВЫИГРЫВАЮТ</div>
             </div>
             <nav className="hidden lg:flex gap-2">
