@@ -82,7 +82,7 @@ export default function Sidebar({ activeSection, sidebarOpen, isAdmin = false, o
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3">СТАТИСТИКА</h3>
+          <h3 className="text-sm text-muted-foreground mb-3 font-bold">СТАТИСТИКА</h3>
           <div className="space-y-3">
             <div className="bg-card rounded-lg p-3 border border-border">
               <div className="flex items-center gap-2 mb-1">
