@@ -74,19 +74,46 @@ export default function UpgradeTargetManager({ isOpen, onClose, onAddTarget }: U
     filterItems();
   }, [searchQuery, selectedRarity, minPrice, maxPrice, steamItems]);
 
-  const loadSteamItems = async () => {
+  const loadSteamItems = () => {
     setIsLoading(true);
-    try {
-      const response = await fetch('/api/steam-items');
-      if (response.ok) {
-        const data = await response.json();
-        setSteamItems(data.items || []);
-      }
-    } catch (error) {
-      console.error('Error loading steam items:', error);
-    } finally {
+    
+    const mockItems: SteamItem[] = [
+      { id: 1, display_name: 'AK-47 | Redline', weapon_type: 'Rifle', rarity: 'Classified', current_price: 450, image_url: '' },
+      { id: 2, display_name: 'AWP | Asiimov', weapon_type: 'Sniper Rifle', rarity: 'Covert', current_price: 1200, image_url: '' },
+      { id: 3, display_name: 'M4A4 | Howl', weapon_type: 'Rifle', rarity: 'Covert', current_price: 8500, image_url: '' },
+      { id: 4, display_name: 'Desert Eagle | Blaze', weapon_type: 'Pistol', rarity: 'Restricted', current_price: 680, image_url: '' },
+      { id: 5, display_name: 'Glock-18 | Fade', weapon_type: 'Pistol', rarity: 'Restricted', current_price: 520, image_url: '' },
+      { id: 6, display_name: 'USP-S | Kill Confirmed', weapon_type: 'Pistol', rarity: 'Classified', current_price: 780, image_url: '' },
+      { id: 7, display_name: 'P250 | Asiimov', weapon_type: 'Pistol', rarity: 'Classified', current_price: 320, image_url: '' },
+      { id: 8, display_name: 'M4A1-S | Hyper Beast', weapon_type: 'Rifle', rarity: 'Classified', current_price: 590, image_url: '' },
+      { id: 9, display_name: 'StatTrak™ AK-47 | Vulcan', weapon_type: 'Rifle', rarity: 'Classified', current_price: 1850, image_url: '' },
+      { id: 10, display_name: 'Karambit | Fade', weapon_type: 'Knife', rarity: 'Extraordinary', current_price: 12500, image_url: '' },
+      { id: 11, display_name: 'Butterfly Knife | Tiger Tooth', weapon_type: 'Knife', rarity: 'Extraordinary', current_price: 9800, image_url: '' },
+      { id: 12, display_name: 'Bayonet | Doppler', weapon_type: 'Knife', rarity: 'Extraordinary', current_price: 7200, image_url: '' },
+      { id: 13, display_name: 'AK-47 | Fire Serpent', weapon_type: 'Rifle', rarity: 'Classified', current_price: 3200, image_url: '' },
+      { id: 14, display_name: 'AWP | Dragon Lore', weapon_type: 'Sniper Rifle', rarity: 'Covert', current_price: 15000, image_url: '' },
+      { id: 15, display_name: 'M4A4 | Emperor', weapon_type: 'Rifle', rarity: 'Classified', current_price: 420, image_url: '' },
+      { id: 16, display_name: 'P90 | Asiimov', weapon_type: 'SMG', rarity: 'Classified', current_price: 280, image_url: '' },
+      { id: 17, display_name: 'Five-SeveN | Case Hardened', weapon_type: 'Pistol', rarity: 'Mil-Spec', current_price: 180, image_url: '' },
+      { id: 18, display_name: 'MP7 | Nemesis', weapon_type: 'SMG', rarity: 'Restricted', current_price: 220, image_url: '' },
+      { id: 19, display_name: 'Galil AR | Sugar Rush', weapon_type: 'Rifle', rarity: 'Mil-Spec', current_price: 95, image_url: '' },
+      { id: 20, display_name: 'MAC-10 | Neon Rider', weapon_type: 'SMG', rarity: 'Classified', current_price: 340, image_url: '' },
+      { id: 21, display_name: 'SSG 08 | Blood in the Water', weapon_type: 'Sniper Rifle', rarity: 'Classified', current_price: 890, image_url: '' },
+      { id: 22, display_name: 'StatTrak™ USP-S | Neo-Noir', weapon_type: 'Pistol', rarity: 'Classified', current_price: 1150, image_url: '' },
+      { id: 23, display_name: 'Falchion Knife | Slaughter', weapon_type: 'Knife', rarity: 'Extraordinary', current_price: 4500, image_url: '' },
+      { id: 24, display_name: 'M9 Bayonet | Crimson Web', weapon_type: 'Knife', rarity: 'Extraordinary', current_price: 6800, image_url: '' },
+      { id: 25, display_name: 'Glock-18 | Water Elemental', weapon_type: 'Pistol', rarity: 'Restricted', current_price: 145, image_url: '' },
+      { id: 26, display_name: 'AK-47 | Neon Revolution', weapon_type: 'Rifle', rarity: 'Classified', current_price: 680, image_url: '' },
+      { id: 27, display_name: 'AWP | Neo-Noir', weapon_type: 'Sniper Rifle', rarity: 'Covert', current_price: 950, image_url: '' },
+      { id: 28, display_name: 'Desert Eagle | Kumicho Dragon', weapon_type: 'Pistol', rarity: 'Covert', current_price: 1420, image_url: '' },
+      { id: 29, display_name: 'StatTrak™ M4A4 | Asiimov', weapon_type: 'Rifle', rarity: 'Covert', current_price: 2100, image_url: '' },
+      { id: 30, display_name: 'Talon Knife | Case Hardened', weapon_type: 'Knife', rarity: 'Extraordinary', current_price: 8900, image_url: '' },
+    ];
+    
+    setTimeout(() => {
+      setSteamItems(mockItems);
       setIsLoading(false);
-    }
+    }, 500);
   };
 
   const filterItems = () => {
