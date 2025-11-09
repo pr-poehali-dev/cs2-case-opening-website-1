@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useInventory } from '@/contexts/InventoryContext';
 import { useUpgradeHistory } from '@/contexts/UpgradeHistoryContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import {
@@ -11,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import UpgradeHistory from '@/components/UpgradeHistory';
+import UpgradeTargetManager from '@/components/admin/UpgradeTargetManager';
 import confetti from 'canvas-confetti';
 
 const rarityOrder = ['common', 'rare', 'epic', 'legendary'] as const;
@@ -35,21 +37,51 @@ interface UpgradeProps {
   onBalanceChange: (amount: number) => void;
 }
 
+interface UpgradeTarget {
+  id: string;
+  name: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  icon: string;
+  price: number;
+}
+
 export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
   const { items, removeItem, addItem } = useInventory();
   const { addHistoryItem } = useUpgradeHistory();
+  const { user } = useAuth();
   const [selectedInputItem, setSelectedInputItem] = useState<string | null>(null);
   const [selectedTargetItem, setSelectedTargetItem] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [upgradeResult, setUpgradeResult] = useState<'win' | 'lose' | null>(null);
   const [arrowRotation, setArrowRotation] = useState(0);
   const [sortBy, setSortBy] = useState<'price' | 'rarity'>('price');
+  const [customTargets, setCustomTargets] = useState<UpgradeTarget[]>([]);
+  const [showTargetManager, setShowTargetManager] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('upgrade_targets');
+    if (saved) {
+      setCustomTargets(JSON.parse(saved));
+    }
+  }, []);
+
+  const handleAddTarget = (target: UpgradeTarget) => {
+    const updated = [...customTargets, target];
+    setCustomTargets(updated);
+    localStorage.setItem('upgrade_targets', JSON.stringify(updated));
+  };
+
+  const handleRemoveTarget = (targetId: string) => {
+    const updated = customTargets.filter(t => t.id !== targetId);
+    setCustomTargets(updated);
+    localStorage.setItem('upgrade_targets', JSON.stringify(updated));
+  };
 
   const calculateWinChance = () => {
     if (!selectedInputItem || !selectedTargetItem) return 0;
 
     const inputItem = items.find((i) => i.id === selectedInputItem);
-    const targetItem = items.find((i) => i.id === selectedTargetItem);
+    const targetItem = [...items, ...customTargets].find((i) => i.id === selectedTargetItem);
 
     if (!inputItem || !targetItem) return 0;
 
@@ -68,7 +100,7 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
     if (!selectedInputItem || !selectedTargetItem) return;
 
     const inputItem = items.find((i) => i.id === selectedInputItem);
-    const targetItem = items.find((i) => i.id === selectedTargetItem);
+    const targetItem = [...items, ...customTargets].find((i) => i.id === selectedTargetItem);
 
     if (!inputItem || !targetItem) return;
 
@@ -178,12 +210,12 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
     return rarityOrder.indexOf(b.rarity as Rarity) - rarityOrder.indexOf(a.rarity as Rarity);
   });
 
-  const availableTargets = sortedItems.filter(item => {
+  const availableTargets = [...sortedItems, ...customTargets].filter(item => {
     if (!selectedInputItem) return false;
     const inputItem = items.find(i => i.id === selectedInputItem);
     if (!inputItem) return false;
     return item.id !== selectedInputItem && item.price > inputItem.price;
-  });
+  }).sort((a, b) => b.price - a.price);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
@@ -368,7 +400,19 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
           </div>
 
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700">
-            <h2 className="text-xl font-bold mb-4">Выберите цель</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Выберите цель</h2>
+              {user?.isAdmin && (
+                <Button
+                  size="sm"
+                  onClick={() => setShowTargetManager(true)}
+                  className="bg-purple-500 hover:bg-purple-600"
+                >
+                  <Icon name="Plus" size={16} className="mr-1" />
+                  Добавить из кейса
+                </Button>
+              )}
+            </div>
 
             {!selectedInputItem ? (
               <div className="text-center py-12">
@@ -380,6 +424,16 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
                 <Icon name="AlertCircle" className="mx-auto text-orange-500 mb-4" size={64} />
                 <p className="text-gray-400">Нет доступных целей для апгрейда</p>
                 <p className="text-xs text-gray-500 mt-2">Цель должна быть дороже входного предмета</p>
+                {user?.isAdmin && (
+                  <Button
+                    size="sm"
+                    onClick={() => setShowTargetManager(true)}
+                    className="mt-4 bg-purple-500 hover:bg-purple-600"
+                  >
+                    <Icon name="Plus" size={16} className="mr-1" />
+                    Добавить цели
+                  </Button>
+                )}
               </div>
             ) : (
               <>
@@ -393,6 +447,7 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
                 <div className="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800 hover:scrollbar-thumb-slate-500">
                   {availableTargets.map((item) => {
                     const isSelected = selectedTargetItem === item.id;
+                    const isCustomTarget = customTargets.some(t => t.id === item.id);
 
                     return (
                       <button
@@ -410,6 +465,19 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
                           </div>
                         )}
 
+                        {user?.isAdmin && isCustomTarget && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveTarget(item.id);
+                            }}
+                            className="absolute top-2 left-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 z-10"
+                            title="Удалить цель"
+                          >
+                            <Icon name="X" size={14} />
+                          </button>
+                        )}
+
                         <div className="text-4xl mb-2">{item.icon}</div>
                         <div className="text-xs font-bold text-white text-center break-words line-clamp-2 mb-1">
                           {item.name}
@@ -425,6 +493,12 @@ export default function Upgrade({ balance, onBalanceChange }: UpgradeProps) {
           </div>
         </div>
       </div>
+
+      <UpgradeTargetManager
+        isOpen={showTargetManager}
+        onClose={() => setShowTargetManager(false)}
+        onAddTarget={handleAddTarget}
+      />
     </div>
   );
 }
