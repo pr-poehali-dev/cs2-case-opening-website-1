@@ -17,7 +17,6 @@ interface ProfileInventoryProps {
   items: InventoryItem[];
   hasTradeUrl: boolean;
   onSellItem: (price: number) => void;
-  onUseInContract: (itemId: string) => void;
   onUseInUpgrade: (itemId: string) => void;
   onWithdrawItem: (itemId: string) => void;
   onRemoveItem: (itemId: string) => void;
@@ -42,7 +41,6 @@ export default function ProfileInventory({
   items,
   hasTradeUrl,
   onSellItem,
-  onUseInContract,
   onUseInUpgrade,
   onWithdrawItem,
   onRemoveItem,
@@ -89,15 +87,6 @@ export default function ProfileInventory({
                   </div>
 
                   <div className="flex gap-1 pt-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="flex-1 h-8 px-2 hover:bg-blue-500/20 hover:border-blue-500 border border-transparent"
-                      title="Использовать в контракте"
-                      onClick={() => onUseInContract(item.id)}
-                    >
-                      <Icon name="Layers" size={16} />
-                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"

@@ -29,14 +29,6 @@ export default function Sidebar({ activeSection, sidebarOpen, isAdmin = false, o
               Кейсы
             </Button>
             <Button
-              variant={activeSection === 'contracts' ? 'default' : 'ghost'}
-              className="w-full justify-start gap-2"
-              onClick={() => onSectionChange('contracts')}
-            >
-              <Icon name="Layers" size={18} />
-              Контракты
-            </Button>
-            <Button
               variant={activeSection === 'upgrade' ? 'default' : 'ghost'}
               className="w-full justify-start gap-2"
               onClick={() => onSectionChange('upgrade')}

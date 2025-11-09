@@ -7,7 +7,6 @@ import Sidebar from '@/components/Sidebar';
 import CaseGrid from '@/components/CaseGrid';
 import LiveDrops from '@/components/LiveDrops';
 import SectionHeader from '@/components/SectionHeader';
-import Contracts from '@/pages/Contracts';
 import Upgrade from '@/pages/Upgrade';
 import DailyBonus from '@/pages/DailyBonus';
 import Promocodes from '@/pages/Promocodes';
@@ -154,10 +153,6 @@ const Index = () => {
     setActiveSection('profile');
   };
 
-  const handleUseInContract = (itemId: string) => {
-    setActiveSection('contracts');
-  };
-
   const handleUseInUpgrade = (itemId: string) => {
     setActiveSection('upgrade');
   };
@@ -183,7 +178,6 @@ const Index = () => {
           tradeUrl={user!.tradeUrl}
           onLogout={logout}
           onSellItem={handleSellItem}
-          onUseInContract={handleUseInContract}
           onUseInUpgrade={handleUseInUpgrade}
           onWithdrawItem={handleWithdrawItem}
         />
@@ -218,15 +212,6 @@ const Index = () => {
       <div className="min-h-screen bg-background text-foreground">
         <SectionHeader balance={balance} onBackClick={() => setActiveSection('cases')} />
         <Upgrade balance={balance} onBalanceChange={handleBalanceChange} />
-      </div>
-    );
-  }
-
-  if (activeSection === 'contracts') {
-    return (
-      <div className="min-h-screen bg-background text-foreground">
-        <SectionHeader balance={balance} onBackClick={() => setActiveSection('cases')} />
-        <Contracts />
       </div>
     );
   }

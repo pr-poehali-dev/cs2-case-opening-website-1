@@ -18,7 +18,6 @@ interface ProfileProps {
   tradeUrl?: string;
   onLogout: () => void;
   onSellItem: (price: number) => void;
-  onUseInContract: (itemId: string) => void;
   onUseInUpgrade: (itemId: string) => void;
   onWithdrawItem: (itemId: string) => void;
 }
@@ -32,7 +31,6 @@ export default function Profile({
   tradeUrl, 
   onLogout, 
   onSellItem, 
-  onUseInContract, 
   onUseInUpgrade, 
   onWithdrawItem 
 }: ProfileProps) {
@@ -127,7 +125,6 @@ export default function Profile({
               items={items}
               hasTradeUrl={!!user?.tradeUrl}
               onSellItem={onSellItem}
-              onUseInContract={onUseInContract}
               onUseInUpgrade={onUseInUpgrade}
               onWithdrawItem={onWithdrawItem}
               onRemoveItem={removeItem}
